@@ -43,7 +43,7 @@ namespace GoogleAccounts
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);//проверка на существование папки, если нет, создаем
 
-            if (!checkExternal.Checked && btnRefresh.Enabled == false) // если галочка не стоит и кнопка обновления не активна, значит не игнорируем айпи и ждем его загрузки. если стоит игнорируем.
+            if (!checkExternal.Checked && btnRefresh.Enabled == true) // если галочка не стоит и кнопка обновления не активна, значит не игнорируем айпи и ждем его загрузки. если стоит игнорируем.
             {
                 if (ipBox.Text != "ожидание...")//если в поле айпи ожидание, выводим сообщение в else 
                 {
@@ -66,7 +66,7 @@ namespace GoogleAccounts
                 }
                 else MessageBox.Show("Подождите загрузки IP адреса.");
             }
-            else if (checkExternal.Checked)
+            else
             {   //иначе для чекнутой просто проверяем строки на пустоту и игнорируем айпи и кнопки.
                 if (!string.IsNullOrEmpty(loginBox.Text) && !string.IsNullOrEmpty(passBox.Text) && !string.IsNullOrEmpty(numBox.Text)) // проверка на пустоту полей ввода 
                 {
@@ -133,37 +133,45 @@ namespace GoogleAccounts
         {
             await Task.Run(() =>
             {
-                var getAccsFromFile = File.ReadAllText(pathdataIP); //читаем все из файла по пути.
-                if (IPAddress.TryParse(ipBox.Text, out var address))
-                    if (getAccsFromFile.Contains(address + ""))// проверяем есть ли ip  в списке. если да ищем последнюю дату записи.
-                    {
-                        var listLogger = getAccsFromFile.Split(new char[] { '\n' }).Where(x => x.Contains(address + "")).ToList();// опять же бьем на элементы каждую запись, которая содержит IP
-                        DateTime lastlogin = default; // создаем дефолтное значения даты для сравнения. для каждого типа свой дефолт. для даты 01.01.0001
-                        bool errors = false;// создаем переменную для отображения ошибки в случае повреждения файла.
-                        foreach (var item in listLogger)// проходим по списку записей 
+                if (File.Exists(pathdataIP))
+                {
+                    var getAccsFromFile = File.ReadAllText(pathdataIP); //читаем все из файла по пути.
+                    if (IPAddress.TryParse(ipBox.Text, out var address))
+                        if (getAccsFromFile.Contains(address + ""))// проверяем есть ли ip  в списке. если да ищем последнюю дату записи.
                         {
-                            if (item.IndexOf("Date ") > 0)// проверка строки на повреждение, дата должна быть обязательно, если -1 значит есть повреждение, уведомляем юзера
+                            var listLogger = getAccsFromFile.Split(new char[] { '\n' }).Where(x => x.Contains(address + "")).ToList();// опять же бьем на элементы каждую запись, которая содержит IP
+                            DateTime lastlogin = default; // создаем дефолтное значения даты для сравнения. для каждого типа свой дефолт. для даты 01.01.0001
+                            bool errors = false;// создаем переменную для отображения ошибки в случае повреждения файла.
+                            foreach (var item in listLogger)// проходим по списку записей 
                             {
-                                var letdate = item.Substring(item.IndexOf("Date ") + 5); // вырезаем дату с индекса Date , тк date с пробелом это 5 символов, прибавляем , нам нужна чистая дата
-
-                                if (lastlogin < DateTime.Parse(letdate))// проверяем если дата больше , вносим , нам нужна ближайшая дата регистрации
+                                if (item.IndexOf("Date ") > 0)// проверка строки на повреждение, дата должна быть обязательно, если -1 значит есть повреждение, уведомляем юзера
                                 {
-                                    lastlogin = DateTime.Parse(letdate);
+                                    var letdate = item.Substring(item.IndexOf("Date ") + 5); // вырезаем дату с индекса Date , тк date с пробелом это 5 символов, прибавляем , нам нужна чистая дата
+
+                                    if (lastlogin < DateTime.Parse(letdate))// проверяем если дата больше , вносим , нам нужна ближайшая дата регистрации
+                                    {
+                                        lastlogin = DateTime.Parse(letdate);
+                                    }
                                 }
+                                else errors = true;
+
                             }
-                            else errors = true;
+                            if (errors)
+                                MessageBox.Show("Некоторые данные были некорректны. Во избежание ошибок, не изменяйте файлы в папке data.");
 
+                            MessageBox.Show($"IP адрес существует. Последняя регистрация: {lastlogin}");
                         }
-                        //if(errors)
-                        //    MessageBox.Show("Некоторые данные были некорректны. Во избежание ошибок, не изменяйте файлы в папке data.");
-
-                        MessageBox.Show($"IP адрес существует. Последняя регистрация: {lastlogin}");
-                    }
-                    else
-                    {
-                        MessageBox.Show("IP адрес отсутствует.");
-                    }
-                else MessageBox.Show("Подождите загрузки IP адреса или проверьте подключение к интернету.");
+                        else
+                        {
+                            MessageBox.Show("IP адрес отсутствует.");
+                        }
+                    else MessageBox.Show("Подождите загрузки IP адреса или проверьте подключение к интернету.");
+                }
+                else
+                {
+                    MessageBox.Show("Регистраций не обнаружено.");
+                }
+                
             });
         }
 

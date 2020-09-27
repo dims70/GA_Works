@@ -1,0 +1,15 @@
+C:\Users\Dimas\source\repos\GoogleAccounts\GoogleAccounts\bin\Debug\GoogleAccounts.exe.config
+C:\Users\Dimas\source\repos\GoogleAccounts\GoogleAccounts\bin\Debug\GoogleAccounts.exe.manifest
+C:\Users\Dimas\source\repos\GoogleAccounts\GoogleAccounts\bin\Debug\GoogleAccounts.application
+C:\Users\Dimas\source\repos\GoogleAccounts\GoogleAccounts\bin\Debug\GoogleAccounts.exe
+C:\Users\Dimas\source\repos\GoogleAccounts\GoogleAccounts\bin\Debug\GoogleAccounts.pdb
+C:\Users\Dimas\source\repos\GoogleAccounts\GoogleAccounts\obj\Debug\GoogleAccounts.csprojAssemblyReference.cache
+C:\Users\Dimas\source\repos\GoogleAccounts\GoogleAccounts\obj\Debug\GoogleAccounts.GACC.resources
+C:\Users\Dimas\source\repos\GoogleAccounts\GoogleAccounts\obj\Debug\GoogleAccounts.Properties.Resources.resources
+C:\Users\Dimas\source\repos\GoogleAccounts\GoogleAccounts\obj\Debug\GoogleAccounts.csproj.GenerateResource.cache
+C:\Users\Dimas\source\repos\GoogleAccounts\GoogleAccounts\obj\Debug\GoogleAccounts.csproj.CoreCompileInputs.cache
+C:\Users\Dimas\source\repos\GoogleAccounts\GoogleAccounts\obj\Debug\GoogleAccounts.exe.manifest
+C:\Users\Dimas\source\repos\GoogleAccounts\GoogleAccounts\obj\Debug\GoogleAccounts.application
+C:\Users\Dimas\source\repos\GoogleAccounts\GoogleAccounts\obj\Debug\GoogleAccounts.exe
+C:\Users\Dimas\source\repos\GoogleAccounts\GoogleAccounts\obj\Debug\GoogleAccounts.pdb
+C:\Users\Dimas\source\repos\GoogleAccounts\GoogleAccounts\obj\Debug\GoogleAccounts.AccForm.resources

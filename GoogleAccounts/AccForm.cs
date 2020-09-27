@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace GoogleAccounts
@@ -20,11 +14,23 @@ namespace GoogleAccounts
         }
         void LoadList(string pathdata)
         {
-            var getAccsFromFile = File.ReadAllText(pathdata); //читаем все из файла по переданному пути.
-            var arrayAccs = getAccsFromFile.Split(new char[] {'\n' }).ToList();//разбиваем текст из файла на массив строк и делим их по спец символам переноса строки \n потому что последний 
-            //и приводим к списку, потому что в массиве удалить элемент нельзя.
-            arrayAccs.Remove(arrayAccs[arrayAccs.Count()-1]);// удаляем последний элемент из списка. потому что он пустой.
-            listAcc.DataSource = arrayAccs;//заполняем контрол списком. дата сорсе может принимать списки листы и тд.
+            if (File.Exists(pathdata))
+            {
+                var getAccsFromFile = File.ReadAllText(pathdata); //читаем все из файла по переданному пути.
+                var arrayAccs = getAccsFromFile.Split(new char[] { '\n' }).ToList();//разбиваем текст из файла на массив строк и делим их по спец символам переноса строки \n потому что последний 
+                //и приводим к списку, потому что в массиве удалить элемент нельзя.
+                arrayAccs.Remove(arrayAccs[arrayAccs.Count() - 1]);// удаляем последний элемент из списка. потому что он пусtтой.
+                listAcc.DataSource = arrayAccs;//заполняем контрол списком. дата сорсе может принимать списки листы и тд.
+            }
+            else
+            {
+                MessageBox.Show("Файл отсутствует, список пуст.");
+            }
+
         }
+
+        private void CopyToolStripMenuItem_Click(object sender, EventArgs e) => Clipboard
+            .SetText(listAcc.SelectedItem == null ? @"¯\_(ツ)_/¯" : listAcc.SelectedItem.ToString()); // кнопка в контекстном меню акков 
+        // для копирования выделенной записи в буфер обмена.
     }
 }

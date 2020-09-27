@@ -1,16 +1,16 @@
-﻿using System.Windows.Forms;
-using System.Net.NetworkInformation;
-using System;
-using System.Net;
+﻿using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace GoogleAccounts
 {
     public partial class GACC : Form
-    {   string pathdata = Application.StartupPath + @"\data\acc.dat";
-        string pathdataIP = Application.StartupPath + @"\data\IP.dat";
+    {
+        string pathdata = Application.StartupPath + @"\data\acc.dat"; // путь до файла с акками
+        string pathdataIP = Application.StartupPath + @"\data\IP.dat";//путь до файла с логинами айпи
         public GACC()
         {
             InitializeComponent();
@@ -33,6 +33,7 @@ namespace GoogleAccounts
             catch //в случае ошибки, а у нас - ошибка в ответе от сервера, значит нет инета.
             {
                 ipBox.Text = "Проверьте подключение...";
+                btnRefresh.Enabled = true;//
             }
         }
 
@@ -41,28 +42,54 @@ namespace GoogleAccounts
             var directory = Application.StartupPath + @"\data"; //Директория для данных
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);//проверка на существование папки, если нет, создаем
-            if(ipBox.Text!="ожидание...")//если в поле айпи ожидание, выводим сообщение в else 
+
+            if (!checkExternal.Checked && btnRefresh.Enabled == false) // если галочка не стоит и кнопка обновления не активна, значит не игнорируем айпи и ждем его загрузки. если стоит игнорируем.
             {
-                if (!string.IsNullOrEmpty(loginBox.Text) || !string.IsNullOrEmpty(passBox.Text) || !string.IsNullOrEmpty(numBox.Text)) // проверка на пустоту полей ввода 
-                {   
-                    if (IPAddress.TryParse(ipBox.Text, out IPAddress address))// если поля не пустые соответственно парсим айпи адрес что бы узнать если ли у нас интернет.
-                    {// если есть выводим в переменную address и записываем с файл попытку создания через айпи. и записываем сам аккаунт
-                        var ipLogin = $"Login attempt : {address} : Date {DateTime.Now} \r\n";
-                        File.AppendAllText(pathdataIP, ipLogin);
-                        CreateRecordAcc();
+                if (ipBox.Text != "ожидание...")//если в поле айпи ожидание, выводим сообщение в else 
+                {
+                    if (!string.IsNullOrEmpty(loginBox.Text) && !string.IsNullOrEmpty(passBox.Text) && !string.IsNullOrEmpty(numBox.Text)) // проверка на пустоту полей ввода 
+                    {
+                        if (IPAddress.TryParse(ipBox.Text, out IPAddress address))// если поля не пустые соответственно парсим айпи адрес что бы узнать если ли у нас интернет.
+                        {// если есть выводим в переменную address и записываем с файл попытку создания через айпи. и записываем сам аккаунт
+                            var ipLogin = $"Login attempt : {address} : Date {DateTime.Now} \r\n";
+                            File.AppendAllText(pathdataIP, ipLogin);
+                            CreateRecordAcc();
+                            MessageBox.Show("Запись сохранена.");
+                        }
+                        else
+                        {
+                            CreateRecordWithoutIP();//если не хотим ждать или нет инета создаем запись без айпи
+                        }
                     }
                     else
-                    {   //если айпи не спарсился, значит в боксе текст ошибки подключения, возможна простая запись. 
-                        File.AppendAllText(pathdataIP, "Create records from external device. \r\n");
-                        CreateRecordAcc();
-                        //в айпи заносится что произвелась запись с внешнего устройства. и сама запись
-                    }
+                        MessageBox.Show("Поля не могут быть пустыми");
+                }
+                else MessageBox.Show("Подождите загрузки IP адреса.");
+            }
+            else if (checkExternal.Checked)
+            {   //иначе для чекнутой просто проверяем строки на пустоту и игнорируем айпи и кнопки.
+                if (!string.IsNullOrEmpty(loginBox.Text) && !string.IsNullOrEmpty(passBox.Text) && !string.IsNullOrEmpty(numBox.Text)) // проверка на пустоту полей ввода 
+                {
+                    CreateRecordWithoutIP();
                 }
                 else
-                    MessageBox.Show("Поля не могут быть пустыми");
+                {
+                    MessageBox.Show("Поля не могут быть пустыми.");
+                }
             }
-            else MessageBox.Show("Подождите загрузки IP адреса.");
 
+
+        }
+        /// <summary>
+        /// Создание записи без IP
+        /// </summary>
+        private void CreateRecordWithoutIP()
+        {
+            //если айпи не спарсился, значит в боксе текст ошибки подключения, возможна простая запись. 
+            File.AppendAllText(pathdataIP, "Create records from external device. \r\n");
+            CreateRecordAcc();
+            //в айпи заносится что произвелась запись с внешнего устройства. и сама запись
+            MessageBox.Show("Запись сохранена без учета IP адреса.");
         }
 
         /// <summary>
@@ -76,18 +103,18 @@ namespace GoogleAccounts
             {
                 if (File.Exists(pathdata))
                     File.Delete(pathdata);// просто спрашиваем у юзера точно ли он хочет, а не случайно. да - удаляет файл с акком. если файла уже не существует - месс.бокс
-                else 
+                else
                     MessageBox.Show("Файла не существует или уже удален");
             }
-                
+
 
         }
         /// <summary>
         ///  Событие очищения текстового файла с акками.
         /// </summary>
         private void btnSeeAcc_Click(object sender, EventArgs e) => new AccForm(pathdata).Show();//тут и сам поймешь:) передаем путь к аккаунтам в форму.
-        
-        
+
+
         /// <summary>
         /// Создание записи аккаунта в текстовый файл
         /// </summary>
@@ -97,31 +124,38 @@ namespace GoogleAccounts
             File.AppendAllText(pathdata, account);
         }
 
+        /// <summary>
+        /// Событие проверки айпи в списке существующих через кнопку.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void btnCheckIP_Click(object sender, EventArgs e)
-        { 
-            await Task.Run(() => {
+        {
+            await Task.Run(() =>
+            {
                 var getAccsFromFile = File.ReadAllText(pathdataIP); //читаем все из файла по пути.
                 if (IPAddress.TryParse(ipBox.Text, out var address))
                     if (getAccsFromFile.Contains(address + ""))// проверяем есть ли ip  в списке. если да ищем последнюю дату записи.
                     {
-                        var listLogger = getAccsFromFile.Split(new char[] { '\n' }).Where(x => x.Contains(address + "")).ToList();// опять же бьем на элементы каждую запись
-                        DateTime lastlogin=default;
-                        bool errors=false;
-                        foreach (var item in listLogger)
+                        var listLogger = getAccsFromFile.Split(new char[] { '\n' }).Where(x => x.Contains(address + "")).ToList();// опять же бьем на элементы каждую запись, которая содержит IP
+                        DateTime lastlogin = default; // создаем дефолтное значения даты для сравнения. для каждого типа свой дефолт. для даты 01.01.0001
+                        bool errors = false;// создаем переменную для отображения ошибки в случае повреждения файла.
+                        foreach (var item in listLogger)// проходим по списку записей 
                         {
-                            if (item.LastIndexOf("Data ") > 0)
+                            if (item.IndexOf("Date ") > 0)// проверка строки на повреждение, дата должна быть обязательно, если -1 значит есть повреждение, уведомляем юзера
                             {
-                                var letdate = item.Substring(item.LastIndexOf("Data "));
+                                var letdate = item.Substring(item.IndexOf("Date ") + 5); // вырезаем дату с индекса Date , тк date с пробелом это 5 символов, прибавляем , нам нужна чистая дата
 
-                                if (lastlogin < DateTime.Parse(letdate))
+                                if (lastlogin < DateTime.Parse(letdate))// проверяем если дата больше , вносим , нам нужна ближайшая дата регистрации
                                 {
                                     lastlogin = DateTime.Parse(letdate);
                                 }
                             }
                             else errors = true;
+
                         }
-                        if(errors)
-                            MessageBox.Show("Некоторые данные были некорректны. Во избежание ошибок, не изменяйте файлы в папке data.");
+                        //if(errors)
+                        //    MessageBox.Show("Некоторые данные были некорректны. Во избежание ошибок, не изменяйте файлы в папке data.");
 
                         MessageBox.Show($"IP адрес существует. Последняя регистрация: {lastlogin}");
                     }
@@ -133,6 +167,15 @@ namespace GoogleAccounts
             });
         }
 
-        private void btnRefresh_Click(object sender, EventArgs e) => LoadIP();// кнопка обновления просто перезагружает IP
+        /// <summary>
+        /// Событие обновления айпи адреса через кнопку.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnRefresh_Click(object sender, EventArgs e)
+        {
+            ipBox.Text = "ожидание...";// пишем что происходит ожидание
+            LoadIP();// кнопка обновления просто перезагружает IP
+        }
     }
 }
